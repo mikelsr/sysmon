@@ -1,0 +1,3 @@
+package: github.com/mikelsr/sysmon
+import:
+- package: github.com/shirou/gopsutil
