@@ -25,6 +25,7 @@ func main() {
 
 	for {
 		sys.Measure()
+		// fmt.Println(sysmon.RequestBody(sys))
 		err = sysmon.PostStatus(conf, sys)
 		if err != nil {
 			log.Fatal(err)

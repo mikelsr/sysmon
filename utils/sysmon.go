@@ -14,6 +14,14 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
+/*
+	Why do errors stop the program instead of being returned for handling
+	like in influx.go?
+
+	If there is an error here, there's something wrong with the program and the
+	source should be fixed.
+*/
+
 // --- Usages ---
 // TODO: Network
 
@@ -119,6 +127,11 @@ func (sys *System) Measure() {
 	sys.CPUUsage()
 	sys.DiskUsage()
 	sys.MemUsage()
+	uptime, err := host.Uptime()
+	if err != nil {
+		log.Fatal(err)
+	}
+	sys.Uptime = uptime
 }
 
 // --- Misc ---

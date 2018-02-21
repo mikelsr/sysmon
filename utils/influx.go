@@ -17,9 +17,9 @@ func CreateDB(conf *Conf) error {
 	return err
 }
 
-func PointHeader(sys *System, measurement string) string {
-	return fmt.Sprintf("%s,hostname=%s,kernel_version=%s,uptime=%d",
-		measurement, sys.HostName, sys.KernelVersion, sys.Uptime)
+func BuildPoint(sys *System, measurement string, body string) string {
+	return fmt.Sprintf("%s,hostname=%s,kernel_version=%s%s,uptime=%d\n",
+		measurement, sys.HostName, sys.KernelVersion, body, sys.Uptime)
 }
 
 func PostStatus(conf *Conf, sys *System) error {
@@ -32,17 +32,17 @@ func RequestBody(sys *System) string {
 	body := ""
 	// cpu
 	for i := 0; i < sys.CPUThreads; i++ {
-		body += fmt.Sprintf("%s,core=%d value=%.2f\n",
-			PointHeader(sys, "cpu_load"), i+1, sys.CPUUsages[i])
+		body += BuildPoint(sys, "cpu_load", fmt.Sprintf(",core=%d value=%.2f",
+			i+1, sys.CPUUsages[i]))
 	}
 	// mem
-	body += fmt.Sprintf("%s,mem_total=%d value=%d\n",
-		PointHeader(sys, "mem_used"), sys.MemTotal, sys.MemUsed)
+	body += BuildPoint(sys, "mem_used", fmt.Sprintf(",mem_total=%d value=%d",
+		sys.MemTotal, sys.MemUsed))
+
 	// disk
 	for i, p := range sys.Partitions {
-		body += fmt.Sprintf("%s,partition=%s,total=%d value=%d\n",
-			PointHeader(sys, "disk_used"), p,
-			sys.DiskUsages[i][0], sys.DiskUsages[i][1])
+		body += BuildPoint(sys, "disk_used", fmt.Sprintf(",partition=%s,total=%d value=%d",
+			p, sys.DiskUsages[i][0], sys.DiskUsages[i][1]))
 	}
 	return body
 }
