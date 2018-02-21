@@ -14,10 +14,19 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
+/*
+	Why do errors stop the program instead of being returned for handling
+	like in influx.go?
+
+	If there is an error here, there's something wrong with the program and the
+	source should be fixed.
+*/
+
 // --- Usages ---
 // TODO: Network
 
 func (sys *System) CPUUsage() {
+	// log.Println("Measuring CPU usage")
 	usages, err := cpu.Percent(time.Second, true)
 	if err != nil {
 		log.Fatal(err)
@@ -28,6 +37,7 @@ func (sys *System) CPUUsage() {
 func (sys *System) DiskUsage() {
 	usages := make([][2]uint64, len(sys.Partitions))
 	for i, p := range sys.Partitions {
+		// log.Printf("Measuring usage for disk mounted in %s\n", p)
 		usage, err := disk.Usage(p)
 		if err != nil {
 			log.Fatal(err)
@@ -39,6 +49,7 @@ func (sys *System) DiskUsage() {
 }
 
 func (sys *System) MemUsage() {
+	// log.Println("Measuring memory usage")
 	vmem, err := mem.VirtualMemory()
 	if err != nil {
 		log.Fatal(err)
@@ -116,6 +127,11 @@ func (sys *System) Measure() {
 	sys.CPUUsage()
 	sys.DiskUsage()
 	sys.MemUsage()
+	uptime, err := host.Uptime()
+	if err != nil {
+		log.Fatal(err)
+	}
+	sys.Uptime = uptime
 }
 
 // --- Misc ---
