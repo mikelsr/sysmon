@@ -1,13 +1,5 @@
 package sysmon
 
-/*
-
-IDEA: Funciones que carguen cada uso en el struct
-      Función de actualización que llama a todas las anteriores
-      Función para reportar estado
-
-*/
-
 import (
 	"encoding/json"
 	"fmt"
@@ -61,7 +53,8 @@ func LoadConf() (*Conf, error) {
 	conf := new(Conf)
 
 	// Load configuration from json file
-	confFile, err := ioutil.ReadFile("conf.json")
+	confFile, err := ioutil.ReadFile(fmt.Sprintf(
+		"%s/src/github.com/mikelsr/sysmon/conf.json", os.Getenv("GOPATH")))
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +72,8 @@ func LoadSystem() (*System, error) {
 	sys := new(System)
 
 	// Load configuration from json file
-	confFile, err := ioutil.ReadFile("system.json")
+	confFile, err := ioutil.ReadFile(fmt.Sprintf(
+		"%s/src/github.com/mikelsr/sysmon/system.json", os.Getenv("GOPATH")))
 	if err != nil {
 		return nil, err
 	}

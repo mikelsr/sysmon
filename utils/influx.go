@@ -11,7 +11,7 @@ func CreateDB(conf *Conf) error {
 	form := url.Values{}
 	form.Add("q", fmt.Sprintf("CREATE DATABASE %s", conf.InfluxDB.DB))
 
-	req, err := http.PostForm(fmt.Sprintf("%s/query", conf.BaseURL()), form)
+	_, err := http.PostForm(fmt.Sprintf("%s/query", conf.BaseURL()), form)
 	return err
 }
 
