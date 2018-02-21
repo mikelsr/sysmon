@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
+	"time"
 
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
@@ -24,7 +26,7 @@ import (
 // TODO: Network
 
 func (sys *System) CPUUsage() {
-	usages, err := cpu.Percent(1, true)
+	usages, err := cpu.Percent(time.Second, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,11 +51,28 @@ func (sys *System) MemUsage() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	sys.MemAv = vmem.Available
+	sys.MemTotal = vmem.Total
 	sys.MemUsed = vmem.Used
 }
 
 // --- Conf ---
+
+func LoadConf() (*Conf, error) {
+	conf := new(Conf)
+
+	// Load configuration from json file
+	confFile, err := ioutil.ReadFile("conf.json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(confFile, conf)
+	if err != nil {
+		return nil, err
+	}
+
+	return conf, nil
+}
 
 func LoadSystem() (*System, error) {
 
@@ -71,6 +90,7 @@ func LoadSystem() (*System, error) {
 	}
 
 	// Load system information
+
 	info, err := cpu.Info()
 	if err != nil {
 		return nil, err
@@ -86,12 +106,19 @@ func LoadSystem() (*System, error) {
 
 	sys.KernelVersion = hostInfo.KernelVersion
 
+	hostName, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
+	sys.HostName = hostName
+
 	return sys, nil
 }
 
 // --- Update ---
 
-func (sys *System) Update() {
+func (sys *System) Measure() {
 	sys.CPUUsage()
 	sys.DiskUsage()
 	sys.MemUsage()
@@ -100,8 +127,8 @@ func (sys *System) Update() {
 // --- Misc ---
 
 func (sys *System) String() string {
-
-	str := fmt.Sprintf("Kernel: %s\n", sys.KernelVersion)
+	str := fmt.Sprintf("Hostname: %s\n", sys.HostName)
+	str = fmt.Sprintf("%sKernel: %s\n", str, sys.KernelVersion)
 
 	// cpu
 	str = fmt.Sprintf("%sCPU:\n\tThreads:%v\n\tUsages:%v\n", str,
@@ -115,10 +142,36 @@ func (sys *System) String() string {
 	}
 
 	// mem
-	str = fmt.Sprintf("%sMem:\n\tAvailable: %v\n\tUsed: %v\n", str,
-		sys.MemAv, sys.MemUsed)
+	str = fmt.Sprintf("%sMem:\n\tTotal: %v\n\tUsed: %v\n", str,
+		sys.MemTotal, sys.MemUsed)
 
 	return str
+}
+
+func (conf *Conf) BaseURL() string {
+	var protocol string
+	if conf.InfluxDB.TLS {
+		protocol = "https"
+	} else {
+		protocol = "http"
+	}
+
+	return fmt.Sprintf("%s://%s:%d", protocol, conf.InfluxDB.Host, conf.InfluxDB.Port)
+}
+
+func (conf *Conf) URI() string {
+	return fmt.Sprintf("%s/write?db=%s",
+		conf.BaseURL(), conf.InfluxDB.DB)
+}
+
+type Conf struct {
+	InfluxDB struct {
+		DB   string `json:"db"`
+		Host string `json:"host"`
+		Port int    `json:"port"`
+		TLS  bool   `json:"tls"`
+	} `json: "influxdb"`
+	Interval int `json:"interval"`
 }
 
 type System struct {
@@ -126,6 +179,7 @@ type System struct {
 	BootTime      uint64
 	CPUInfo       []cpu.InfoStat
 	CPUThreads    int
+	HostName      string
 	Partitions    []string `json:"partitions"`
 	KernelVersion string
 	Uptime        uint64
@@ -133,6 +187,6 @@ type System struct {
 	// Usages
 	CPUUsages  []float64
 	DiskUsages [][2]uint64
-	MemAv      uint64
 	MemUsed    uint64
+	MemTotal   uint64
 }

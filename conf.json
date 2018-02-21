@@ -1,0 +1,9 @@
+{
+  "influxdb": {
+    "db": "sys_stats",
+    "host": "localhost",
+    "port": 8086,
+    "tls": false
+  },
+  "interval": 10
+}
