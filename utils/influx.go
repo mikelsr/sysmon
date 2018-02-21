@@ -2,12 +2,14 @@ package sysmon
 
 import (
 	"fmt"
+	// "log"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
 func CreateDB(conf *Conf) error {
+	// log.Printf("Creating database %s\n", conf.InfluxDB.DB)
 	form := url.Values{}
 	form.Add("q", fmt.Sprintf("CREATE DATABASE %s", conf.InfluxDB.DB))
 
@@ -21,6 +23,7 @@ func PointHeader(sys *System, measurement string) string {
 }
 
 func PostStatus(conf *Conf, sys *System) error {
+	// log.Printf("Sendig data to %s\n", conf.BaseURL())
 	_, err := http.Post(conf.URI(), "text/plain", strings.NewReader(RequestBody(sys)))
 	return err
 }

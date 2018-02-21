@@ -18,6 +18,7 @@ import (
 // TODO: Network
 
 func (sys *System) CPUUsage() {
+	// log.Println("Measuring CPU usage")
 	usages, err := cpu.Percent(time.Second, true)
 	if err != nil {
 		log.Fatal(err)
@@ -28,6 +29,7 @@ func (sys *System) CPUUsage() {
 func (sys *System) DiskUsage() {
 	usages := make([][2]uint64, len(sys.Partitions))
 	for i, p := range sys.Partitions {
+		// log.Printf("Measuring usage for disk mounted in %s\n", p)
 		usage, err := disk.Usage(p)
 		if err != nil {
 			log.Fatal(err)
@@ -39,6 +41,7 @@ func (sys *System) DiskUsage() {
 }
 
 func (sys *System) MemUsage() {
+	// log.Println("Measuring memory usage")
 	vmem, err := mem.VirtualMemory()
 	if err != nil {
 		log.Fatal(err)
