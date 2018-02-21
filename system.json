@@ -1,0 +1,7 @@
+{
+  "threads": 8,
+  "partitions": [
+    "/",
+    "/home"
+  ]
+}
