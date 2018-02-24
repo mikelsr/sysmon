@@ -11,6 +11,7 @@ Create the necessary folders
 ```bash
 mkdir $HOME/.empty  # to measure space of /home partition
 sudo mkdir /var/lib/influxdb /var/log/grafana  # keep data after removing containers
+sudo chmod 0777 /var/lib/influxdb /var/log/grafana
 ```
 
 Command to launch `sysmon`

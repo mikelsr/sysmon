@@ -17,19 +17,21 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	err = sysmon.CreateDB(conf)
-	if err != nil {
-		log.Fatal(err)
+	for {
+		err = sysmon.CreateDB(conf)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Duration(3))
 	}
 
 	for {
 		sys.Measure()
 		// fmt.Println(sysmon.RequestBody(sys))
-		err = sysmon.PostStatus(conf, sys)
-		if err != nil {
-			log.Fatal(err)
-		}
+		_ = sysmon.PostStatus(conf, sys)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 		time.Sleep(time.Second * time.Duration(conf.Interval))
 	}
 }
